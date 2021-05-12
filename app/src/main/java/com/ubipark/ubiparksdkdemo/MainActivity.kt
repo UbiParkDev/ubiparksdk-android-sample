@@ -17,7 +17,6 @@ import com.ubipark.ubiparksdk.services.BeaconService
 import com.ubipark.ubiparksdk.services.BeaconServiceCallback
 import java.util.ArrayList
 
-
 class MainActivity : AppCompatActivity() {
     private val TAG = "MyActivity"
 
@@ -29,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        _beaconServiceCallback = BeaconManagerCallback();
+        _beaconServiceCallback = BeaconManagerCallback()
 
         // Apply client specific SDK settings.
         UbiParkSDKConfig.setAppId("com.equiem.app")
@@ -56,10 +55,10 @@ class MainActivity : AppCompatActivity() {
 
     /* UserAPI Samples */
     fun create_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
-        var userRequest = UserRequest(
+        val userRequest = UserRequest(
                 email = "equiemtest6@ubipark.com",
                 password = "equiemtest6",
                 firstname = "Equiem",
@@ -68,9 +67,9 @@ class MainActivity : AppCompatActivity() {
         )
 
         UserAPI.create(userRequest, callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var userResult = it
+            val userResult = it
 
             if (userResult != null) {
                 Log.v(TAG, "Create result:" + userResult.toString())
@@ -86,11 +85,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun createUser_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
         /* Create a user without a password */
-        var createUserRequest = CreateUserRequest(
+        val createUserRequest = CreateUserRequest(
                 email = "equiemtest7@ubipark.com",
                 firstname = "Equiem",
                 lastname = "Test7",
@@ -98,9 +97,9 @@ class MainActivity : AppCompatActivity() {
         )
 
         UserAPI.createUser(createUserRequest, callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var createUserResult = it
+            val createUserResult = it
 
             if (createUserResult != null) {
                 Log.v(TAG, "CreateUser result:" + createUserResult.toString())
@@ -116,16 +115,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun login_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
-        var username = "equiemtest1@ubipark.com"
-        var password = "equiemtest1"
+        val username = "equiemtest1@ubipark.com"
+        val password = "equiemtest1"
 
         UserAPI.login(username, password, callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var loginResult = it
+            val loginResult = it
 
             if (loginResult != null) {
                 Log.v(TAG, "Login result:" + loginResult.toString())
@@ -141,13 +140,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun detail_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
         UserAPI.detail(callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var detailResult = it
+            val detailResult = it
 
             if (detailResult != null) {
                 Log.v(TAG, "UserDetail result:" + detailResult.toString())
@@ -161,14 +160,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun update_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
         UserAPI.detail(callback = ({
-            var detailResult = it
+            val detailResult = it
 
             if (detailResult != null) {
-                var updateRequest = UpdateRequest(
+                val updateRequest = UpdateRequest(
                         email = detailResult.email,
                         firstName = detailResult.firstName,
                         lastName = detailResult.lastName,
@@ -182,9 +181,9 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 UserAPI.update(updateRequest, callback = ({
-                    spinner.setVisibility(View.GONE);
+                    spinner.setVisibility(View.GONE)
 
-                    var updateResult = it
+                    val updateResult = it
 
                     if (updateResult != null) {
                         Log.v(TAG, "Update result:" + updateResult.toString())
@@ -200,13 +199,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun status_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
         UserAPI.status(callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var statusResult = it
+            val statusResult = it
 
             if (statusResult != null) {
                 Log.v(TAG, "Status result:" + statusResult.toString())
@@ -220,13 +219,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun authToken_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
         UserAPI.authToken("equiemtest1@ubipark.com", null, callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var authTokenResult = it
+            val authTokenResult = it
 
             if (authTokenResult != null) {
                 Log.v(TAG, "AuthToken result:" + authTokenResult.toString())
@@ -241,8 +240,8 @@ class MainActivity : AppCompatActivity() {
 
     /* CarParkAPI Samples */
     fun carParkDetail_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
         /* BeaconUIDs */
         //7134D0B8-49DF-487B-B2A5-0ED7CAAB2818:5:8
@@ -253,9 +252,9 @@ class MainActivity : AppCompatActivity() {
         //7134D0B8-49DF-487B-B2A5-0ED7CAAB2818:5:10
 
         CarParkAPI.detail("7134D0B8-49DF-487B-B2A5-0ED7CAAB2818:5:8", null, callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var detailsResult = it
+            val detailsResult = it
 
             if (detailsResult != null) {
                 Log.v(TAG, "CarPark Detail result:" + detailsResult.toString())
@@ -269,15 +268,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun enter_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
-        var laneId: Long = 41 // Test entry lane
+        val laneId: Long = 41 // Test entry lane
 
         CarParkAPI.enter(laneId, null, callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var enterResult = it
+            val enterResult = it
 
             if (enterResult != null) {
                 Log.v(TAG, "CarPark Enter result:" + enterResult.toString())
@@ -291,15 +290,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun exit_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
-        spinner.setVisibility(View.VISIBLE);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
 
-        var laneId: Long = 8 // Test exit lane
+        val laneId: Long = 8 // Test exit lane
 
         CarParkAPI.exit(laneId, laneId, callback = ({
-            spinner.setVisibility(View.GONE);
+            spinner.setVisibility(View.GONE)
 
-            var exitResult = it
+            val exitResult = it
 
             if (exitResult != null) {
                 Log.v(TAG, "CarPark Exit result:" + exitResult.toString())
@@ -314,7 +313,7 @@ class MainActivity : AppCompatActivity() {
 
     /* Beacon Serivce Samples */
     fun startService_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1);
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
         spinner.setVisibility(View.VISIBLE)
 
         beaconService.initService(_beaconServiceCallback as BeaconServiceCallback)
@@ -334,7 +333,7 @@ class MainActivity : AppCompatActivity() {
                 spinner.setVisibility(View.GONE)
             }
 
-            var beaconServiceResult = it
+            val beaconServiceResult = it
 
             Log.v(TAG, "startService result:" + beaconServiceResult.toString())
             runOnUiThread {
@@ -345,7 +344,7 @@ class MainActivity : AppCompatActivity() {
                 ).show()
             }
 
-            beaconServiceStarted = true;
+            beaconServiceStarted = true
 
             // Tell the BeaconService tha the app is in the foreground so that it will
             // scan for beacons more aggressively - call beaconService.onBackground()
@@ -356,7 +355,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun stopService_Click(view: View) {
-        var spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
         spinner.setVisibility(View.VISIBLE)
 
         beaconService.stopService(callback = ({
@@ -364,7 +363,7 @@ class MainActivity : AppCompatActivity() {
                 spinner.setVisibility(View.GONE)
             }
 
-            var beaconServiceResult = it
+            val beaconServiceResult = it
 
             Log.v(TAG, "stopService result:" + beaconServiceResult.toString())
             runOnUiThread {
@@ -377,7 +376,7 @@ class MainActivity : AppCompatActivity() {
         }))
     }
 
-    public class BeaconManagerCallback() : BeaconServiceCallback
+    class BeaconManagerCallback() : BeaconServiceCallback
     {
         private var TAG = "BeaconManagerCallback"
 
