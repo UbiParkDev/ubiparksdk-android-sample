@@ -133,8 +133,12 @@ class MainActivity : AppCompatActivity() {
                         "Login result:" + loginResult.toString(),
                         Toast.LENGTH_LONG
                 ).show()
-                UbiParkSDKConfig.setUserId(loginResult.userId)
-                UbiParkSDKConfig.setUserToken(loginResult.authenticationToken)
+                if (loginResult.result == "Success") {
+                    UbiParkSDKConfig.setUserId(loginResult.userId)
+                    UbiParkSDKConfig.setUserToken(loginResult.authenticationToken)
+                } else {
+                    UbiParkSDKConfig.resetUser() // clear existing userId and authenticationToken
+                }
             }
         }))
     }
@@ -214,6 +218,12 @@ class MainActivity : AppCompatActivity() {
                         "Status result:" + statusResult.toString(),
                         Toast.LENGTH_LONG
                 ).show()
+
+                // Set the status of the user, so that the beacon service
+                // knows what state the user is in.
+                // e.g. if user is not in car park then search for entry beacons,
+                //      if user is in car park search for exit beacons.
+                beaconService.setUserStatus(statusResult)
             }
         }))
     }
@@ -271,7 +281,7 @@ class MainActivity : AppCompatActivity() {
         val spinner = findViewById<ProgressBar>(R.id.progressBar1)
         spinner.setVisibility(View.VISIBLE)
 
-        val laneId: Long = 41 // Test entry lane
+        val laneId: Long = 289 // Car Park: Equiem Test Lane: Entry 1
 
         CarParkAPI.enter(laneId, null, callback = ({
             spinner.setVisibility(View.GONE)
@@ -293,7 +303,7 @@ class MainActivity : AppCompatActivity() {
         val spinner = findViewById<ProgressBar>(R.id.progressBar1)
         spinner.setVisibility(View.VISIBLE)
 
-        val laneId: Long = 8 // Test exit lane
+        val laneId: Long = 293 // Car Park: Equiem Test Lane: Exit 2
 
         CarParkAPI.exit(laneId, laneId, callback = ({
             spinner.setVisibility(View.GONE)
@@ -389,7 +399,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun beaconsChanged(beacons: ArrayList<BeaconModel>?) {
-            Log.v(TAG,"BeconsChanged")
+            Log.v(TAG,"BeaconsChanged")
         }
 
         override fun lanesChanged(lanes: ArrayList<LaneModel>?) {
