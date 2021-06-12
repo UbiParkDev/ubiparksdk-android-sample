@@ -1,13 +1,23 @@
 package com.ubipark.ubiparksdkdemo
 
-import androidx.appcompat.app.AppCompatActivity
+import android.Manifest
+import android.annotation.SuppressLint
+import android.annotation.TargetApi
+import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
-import com.bluecats.sdk.BlueCatsSDK
-
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.*
 import com.ubipark.ubiparksdk.BeaconLogLevel
 import com.ubipark.ubiparksdk.UbiParkSDKConfig
 import com.ubipark.ubiparksdk.api.CarParkAPI
@@ -15,7 +25,7 @@ import com.ubipark.ubiparksdk.api.UserAPI
 import com.ubipark.ubiparksdk.models.*
 import com.ubipark.ubiparksdk.services.BeaconService
 import com.ubipark.ubiparksdk.services.BeaconServiceCallback
-import java.util.ArrayList
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "MyActivity"
@@ -23,6 +33,9 @@ class MainActivity : AppCompatActivity() {
     private var _beaconServiceCallback: BeaconManagerCallback? = null
     private var beaconService = BeaconService()
     private var beaconServiceStarted = false
+
+    private var fusedLocationClient: FusedLocationProviderClient? = null
+    var PERMISSION_ID = 44
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +50,25 @@ class MainActivity : AppCompatActivity() {
         UbiParkSDKConfig.setClientSecret("5d7dd81c-1229-4733-81b8-14952fb00533")
 
         UbiParkSDKConfig.setBeaconLogLevel(BeaconLogLevel.HIGH)
+
+        if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION) !== PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            }else {
+                ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            }
+        }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
     override fun onResume() {
         super.onResume()
+
+        if (checkPermissions()) {
+            getLastLocation()
+        }
+
         if (beaconServiceStarted) {
             beaconService.onForeground()
         }
@@ -51,6 +79,118 @@ class MainActivity : AppCompatActivity() {
         if (beaconServiceStarted) {
             beaconService.onBackground()
         }
+    }
+
+    /* Location Services */
+    fun requestLocation_Click(view: View) {
+        getLastLocation()
+    }
+
+    fun requestBackgroundLocation_Click(view: View) {
+        checkBackgroundLocationPermissionAPI30(1)
+    }
+
+    private fun Context.checkSinglePermission(permission: String) : Boolean {
+        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+    }
+
+    @TargetApi(30)
+    private fun Context.checkBackgroundLocationPermissionAPI30(backgroundLocationRequestCode: Int) {
+        if (checkSinglePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) return
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Location access for this app")
+        builder.setMessage("Allow app to use backgorund location")
+        builder.setPositiveButton("Yes") { dialog, which ->
+            // this request will take user to Application's Setting page
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), backgroundLocationRequestCode)
+        }
+        builder.setNegativeButton("No") { dialog, which ->
+            dialog.dismiss()
+        }
+        builder.create()
+        builder.show()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getLastLocation() {
+        // check if permissions are given
+        if (checkPermissions()) {
+
+            // check if location is enabled
+            if (isLocationEnabled()) {
+
+                // getting last
+                // location from
+                // FusedLocationClient
+                // object
+                fusedLocationClient?.getLastLocation()?.addOnCompleteListener {
+                    var locationTask = it;
+                    if (locationTask != null) {
+                        var location = locationTask.getResult()
+                        if (location == null) {
+                            requestNewLocationData()
+                        } else {
+                            UbiParkSDKConfig.setCurrentLatitude(location.getLatitude())
+                            UbiParkSDKConfig.setCurrentLongitude(location.getLatitude())
+                        }
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Please turn on" + " your location...", Toast.LENGTH_LONG)
+                    .show()
+            }
+        } else {
+            // if permissions aren't available,
+            // request for permissions
+            requestPermissions()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun requestNewLocationData() {
+        val locationRequest = LocationRequest()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest.interval = 5
+        locationRequest.fastestInterval = 0
+        locationRequest.numUpdates = 1
+
+        var fusedLocation = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocation.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper())
+    }
+
+    private val mLocationCallback: LocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            val lastLocation = locationResult.lastLocation
+            UbiParkSDKConfig.setCurrentLatitude(lastLocation.getLatitude())
+            UbiParkSDKConfig.setCurrentLongitude(lastLocation.getLatitude())
+        }
+    }
+
+    // method to check for permissions
+    private fun checkPermissions(): Boolean {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    // method to request for permissions
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+            this, arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ), PERMISSION_ID
+        )
+    }
+
+    // method to check
+    // if location is enabled
+    private fun isLocationEnabled(): Boolean {
+        val locationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
     }
 
     /* UserAPI Samples */
