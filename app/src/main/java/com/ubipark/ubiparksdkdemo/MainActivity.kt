@@ -4,6 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.AlertDialog
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,6 +26,7 @@ import com.ubipark.ubiparksdk.UbiParkSDKConfig
 import com.ubipark.ubiparksdk.api.CarParkAPI
 import com.ubipark.ubiparksdk.api.UserAPI
 import com.ubipark.ubiparksdk.models.*
+import com.ubipark.ubiparksdk.services.BeaconJobService
 import com.ubipark.ubiparksdk.services.BeaconService
 import com.ubipark.ubiparksdk.services.BeaconServiceCallback
 import java.util.*
@@ -31,11 +35,13 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MyActivity"
 
     private var _beaconServiceCallback: BeaconManagerCallback? = null
-    private var beaconService = BeaconService()
+    private var beaconService = BeaconService
     private var beaconServiceStarted = false
 
     private var fusedLocationClient: FusedLocationProviderClient? = null
     var PERMISSION_ID = 44
+
+    val JOB_SCHEDULER_ID = 1234
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -466,7 +472,7 @@ class MainActivity : AppCompatActivity() {
         val spinner = findViewById<ProgressBar>(R.id.progressBar1)
         spinner.setVisibility(View.VISIBLE)
 
-        beaconService.initService(_beaconServiceCallback as BeaconServiceCallback)
+        beaconService.initService(this, _beaconServiceCallback as BeaconServiceCallback)
 
         // Disable the timer on the BeaconService so that beacon detection
         // is not reset while debugging
@@ -502,6 +508,30 @@ class MainActivity : AppCompatActivity() {
             // usuage warnings
             beaconService.onForeground()
         }))
+    }
+
+    fun startServiceAsJob_Click(view: View) {
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
+
+        // Set variables on service
+        beaconService.initService(this, _beaconServiceCallback as BeaconServiceCallback)
+
+        // Disable the timer on the BeaconService so that beacon detection
+        // is not reset while debugging
+        beaconService.setTimerEnabled(false)
+
+        var jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler;
+
+        var jobInfo = JobInfo.Builder(JOB_SCHEDULER_ID, ComponentName(this, BeaconJobService::class.java))
+                .setMinimumLatency(0)
+                .build()
+
+        jobScheduler.schedule(jobInfo);
+
+        runOnUiThread {
+            spinner.setVisibility(View.GONE)
+        }
     }
 
     fun stopService_Click(view: View) {

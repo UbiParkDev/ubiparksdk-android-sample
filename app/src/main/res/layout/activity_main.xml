@@ -96,6 +96,12 @@
                 android:text="Start Beacon Service"
                 android:onClick="startService_Click"/>
             <Button
+                android:id="@+id/startServiceAsJobButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Start Beacon Job Service"
+                android:onClick="startServiceAsJob_Click"/>
+            <Button
                 android:id="@+id/stopServiceButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -25,7 +25,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:enabled="true" android:name="com.ubipark.ubiparksdk.services.BeaconSDKService" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <service android:enabled="true" android:exported="false" android:name="com.ubipark.ubiparksdk.services.BeaconJobService" android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 
 </manifest>
