@@ -162,7 +162,8 @@ class MainActivity : AppCompatActivity() {
         locationRequest.numUpdates = 1
 
         var fusedLocation = LocationServices.getFusedLocationProviderClient(this)
-        fusedLocation.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper())
+        Looper.myLooper()
+            ?.let { fusedLocation.requestLocationUpdates(locationRequest, mLocationCallback, it) }
     }
 
     private val mLocationCallback: LocationCallback = object : LocationCallback() {
