@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         UbiParkSDKConfig.setAppId("{ADD YOUR AppID HERE}")
         UbiParkSDKConfig.setServerName("https://staging.ubipark.com") // https://api.ubipark.com
         UbiParkSDKConfig.setBeaconToken("{ADD YOUR BeaconToken HERE}")
-        UbiParkSDKConfig.setClientSecret("{ADD YOU ClientSecret HERE}")
+        UbiParkSDKConfig.setClientSecret("{ADD YOUR ClientSecret HERE}")
 
         UbiParkSDKConfig.setBeaconLogLevel(BeaconLogLevel.HIGH)
 
