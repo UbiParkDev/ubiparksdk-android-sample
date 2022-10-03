@@ -8,7 +8,6 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
@@ -16,6 +15,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        _beaconServiceCallback = BeaconManagerCallback()
+        _beaconServiceCallback = BeaconManagerCallback(this@MainActivity)
 
         // Apply client specific SDK settings.
         UbiParkSDKConfig.setAppId("{ADD YOUR AppID HERE}")
@@ -66,6 +66,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        val textView = findViewById<View>(R.id.statusTextView) as TextView
+        textView.setText("Ready.")
     }
 
     override fun onResume() {
@@ -78,6 +81,19 @@ class MainActivity : AppCompatActivity() {
         if (beaconServiceStarted) {
             beaconService.onForeground()
         }
+
+        val textView = findViewById<View>(R.id.statusTextView) as TextView
+        var text = "Resuming. UserId = " + UbiParkSDKConfig.getUserId().toString()
+        val statusResult = beaconService.getUserStatusCurrent()
+
+        if (statusResult != null) {
+            text += ", User Status:" + statusResult.toString()
+        } else {
+            text += ", User Status: null"
+
+        }
+
+        textView.setText(text)
     }
 
     override fun onPause() {
@@ -106,7 +122,7 @@ class MainActivity : AppCompatActivity() {
 
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Location access for this app")
-        builder.setMessage("Allow app to use backgorund location")
+        builder.setMessage("Allow app to use background location")
         builder.setPositiveButton("Yes") { dialog, which ->
             // this request will take user to Application's Setting page
             requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), backgroundLocationRequestCode)
@@ -131,9 +147,9 @@ class MainActivity : AppCompatActivity() {
                 // FusedLocationClient
                 // object
                 fusedLocationClient?.getLastLocation()?.addOnCompleteListener {
-                    var locationTask = it;
+                    val locationTask = it
                     if (locationTask != null) {
-                        var location = locationTask.getResult()
+                        val location = locationTask.getResult()
                         if (location == null) {
                             requestNewLocationData()
                         } else {
@@ -161,7 +177,7 @@ class MainActivity : AppCompatActivity() {
         locationRequest.fastestInterval = 0
         locationRequest.numUpdates = 1
 
-        var fusedLocation = LocationServices.getFusedLocationProviderClient(this)
+        val fusedLocation = LocationServices.getFusedLocationProviderClient(this)
         Looper.myLooper()
             ?.let { fusedLocation.requestLocationUpdates(locationRequest, mLocationCallback, it) }
     }
@@ -456,8 +472,16 @@ class MainActivity : AppCompatActivity() {
         }))
     }
 
-    /* Beacon Serivce Samples */
+    /* Beacon Service Samples */
     fun startService_Click(view: View) {
+        if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_SCAN) !== PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity, Manifest.permission.BLUETOOTH_SCAN)) {
+                ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.BLUETOOTH_SCAN), 1)
+            }else {
+                ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.BLUETOOTH_SCAN), 1)
+            }
+        }
+
         val spinner = findViewById<ProgressBar>(R.id.progressBar1)
         spinner.setVisibility(View.VISIBLE)
 
@@ -493,13 +517,21 @@ class MainActivity : AppCompatActivity() {
 
             // Tell the BeaconService tha the app is in the foreground so that it will
             // scan for beacons more aggressively - call beaconService.onBackground()
-            // when app is sent to background to conserver battery and avoid battery
-            // usuage warnings
+            // when app is sent to background to conserve battery and avoid battery
+            // usage warnings
             beaconService.onForeground()
         }))
     }
 
     fun startServiceAsJob_Click(view: View) {
+        if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_SCAN) !== PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity, Manifest.permission.BLUETOOTH_SCAN)) {
+                ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.BLUETOOTH_SCAN), 1)
+            }else {
+                ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.BLUETOOTH_SCAN), 1)
+            }
+        }
+
         val spinner = findViewById<ProgressBar>(R.id.progressBar1)
         spinner.setVisibility(View.VISIBLE)
 
@@ -510,13 +542,15 @@ class MainActivity : AppCompatActivity() {
         // is not reset while debugging
         beaconService.setTimerEnabled(false)
 
-        var jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler;
+        val jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
 
-        var jobInfo = JobInfo.Builder(JOB_SCHEDULER_ID, ComponentName(this, BeaconJobService::class.java))
+        val jobInfo = JobInfo.Builder(JOB_SCHEDULER_ID, ComponentName(this, BeaconJobService::class.java))
                 .setMinimumLatency(0)
                 .build()
 
-        jobScheduler.schedule(jobInfo);
+        jobScheduler.schedule(jobInfo)
+
+        beaconServiceStarted = true
 
         runOnUiThread {
             spinner.setVisibility(View.GONE)
@@ -542,15 +576,58 @@ class MainActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                 ).show()
             }
+
+            beaconServiceStarted = false
         }))
     }
 
-    class BeaconManagerCallback() : BeaconServiceCallback
+    fun statusService_Click(view: View) {
+        val spinner = findViewById<ProgressBar>(R.id.progressBar1)
+        spinner.setVisibility(View.VISIBLE)
+
+        beaconService.getStatus(callback = ({
+            runOnUiThread {
+                spinner.setVisibility(View.GONE)
+            }
+
+            val beaconServiceResult = it
+
+            Log.v(TAG, "statusService result:" + beaconServiceResult.toString())
+            runOnUiThread {
+                Toast.makeText(
+                    view.context,
+                    "statusService result:" + beaconServiceResult.toString(),
+                    Toast.LENGTH_LONG
+                ).show()
+
+                val textView = findViewById<View>(R.id.statusTextView) as TextView
+                textView.setText("statusService result:" + beaconServiceResult.toString())
+            }
+        }))
+    }
+
+    fun updateCarParkText(carParkText: String) {
+        runOnUiThread {
+            val textView = findViewById<View>(R.id.carParkTextView) as TextView
+            textView.setText("Car Park: " + carParkText)
+        }
+    }
+
+    fun updateClosestLane(closestLaneText: String) {
+        runOnUiThread {
+            val textView = findViewById<View>(R.id.closestLaneTextView) as TextView
+            textView.setText("Closest Lane: " + closestLaneText)
+        }
+    }
+
+    class BeaconManagerCallback(context: Context) : BeaconServiceCallback
     {
         private var TAG = "BeaconManagerCallback"
+        private var _context = context
 
         override fun carParkNameChanged(carParkName: String) {
             Log.v(TAG, "Car Park Found: " + carParkName)
+            (_context as MainActivity).updateCarParkText(carParkName)
         }
 
         override fun carParkIdChanged(carParkId: Long) {
@@ -570,15 +647,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        override fun laneBeaconsChanged(laneBeaconss: ArrayList<LaneModel>?) {
+        override fun laneBeaconsChanged(laneBeacons: ArrayList<LaneModel>?) {
             Log.v(TAG,"LaneBeaconsChanged")
         }
 
         override fun closestLaneChanged(closestLane: LaneModel?) {
             if (closestLane != null) {
                 Log.v(TAG,"Closest Lane is now: " + closestLane.name + ", " + closestLane.shortName)
+                (_context as MainActivity).updateClosestLane(closestLane.name + ", " + closestLane.shortName)
+
             } else {
                 Log.v(TAG,"No Closest Lane")
+                (_context as MainActivity).updateClosestLane("No Closest Lane")
             }
         }
     }
