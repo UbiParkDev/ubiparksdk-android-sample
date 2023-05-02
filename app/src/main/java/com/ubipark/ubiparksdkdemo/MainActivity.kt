@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity() {
         // Apply client specific SDK settings.
         UbiParkSDKConfig.setAppId("{ADD YOUR AppID HERE}")
         UbiParkSDKConfig.setServerName("https://staging.ubipark.com") // https://api.ubipark.com
-        UbiParkSDKConfig.setBeaconToken("{ADD YOUR BeaconToken HERE}")
         UbiParkSDKConfig.setClientSecret("{ADD YOUR ClientSecret HERE}")
 
         UbiParkSDKConfig.setBeaconLogLevel(BeaconLogLevel.HIGH)
@@ -63,6 +62,10 @@ class MainActivity : AppCompatActivity() {
             }else {
                 ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
             }
+        }
+
+        if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT) !== PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 1)
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
