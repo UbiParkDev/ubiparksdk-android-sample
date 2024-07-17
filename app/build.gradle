@@ -45,7 +45,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // Kontakt
-    implementation group: 'io.kontakt.mvn', name: 'sdk', version: '7.1.0'
+    implementation group: 'io.kontakt.mvn', name: 'sdk', version: '7.1.13'
 
     //Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
